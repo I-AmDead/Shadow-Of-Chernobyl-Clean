@@ -1,0 +1,3 @@
+<game_tasks_data>
+#include "gameplay\tasks\*.xml"
+</game_tasks_data>
