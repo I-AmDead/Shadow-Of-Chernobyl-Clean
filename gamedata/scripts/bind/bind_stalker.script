@@ -15,6 +15,9 @@ function actor_binder:__init (obj) super(obj)
 	self.bCheckStart = false
 	self.weather_manager = level_weathers.WeatherManager()
 	self.actor_detector = xr_detector.actor_detector()
+	self.am = ogsr_signals.get_mgr()
+	self.am:call("on_load_before_all")
+	self.am:call("on_init", obj)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:net_spawn(data)
@@ -29,6 +32,7 @@ function actor_binder:net_spawn(data)
 	end
 
 	db.add_actor(self.object)
+	self.am:call("on_before_spawn")
 	
 	level.enable_input()
 
@@ -41,6 +45,7 @@ function actor_binder:net_spawn(data)
 	--' Загружаем настройки дропа
 	death_manager.init_drop_settings()
 
+	self.am:call("on_spawn", data)
 	return true
 end
 ----------------------------------------------------------------------------------------------------------------------
@@ -70,6 +75,7 @@ function actor_binder:net_destroy()
 	xr_sound.stop_all_sound_object()
 
 	object_binder.net_destroy(self)
+	self.am:call("on_destroy")
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:reinit()
@@ -92,6 +98,8 @@ function actor_binder:reinit()
 	self.object:set_callback(callback.level_border_enter, self.level_border_enter, self)
 	self.object:set_callback(callback.level_border_exit, self.level_border_exit, self)
 	self.object:set_callback(callback.take_item_from_box, self.take_item_from_box, self)
+
+	self.am:call("on_reinit")
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:take_item_from_box(box, item)
@@ -101,14 +109,18 @@ function actor_binder:take_item_from_box(box, item)
 	end
 
 	treasure_manager.take_item_from_box(box, story_id)
+
+	self.am:call("on_take_from_box", box, item, sobj)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:level_border_enter(npc, info_id)
 	self.actor_detector:actor_enter()
+	self.am:call("on_level_border_enter", npc, info_id)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:level_border_exit(npc, info_id)
 	self.actor_detector:actor_exit()
+	self.am:call("on_level_border_exit", npc, info_id)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:info_callback(npc, info_id)
@@ -117,6 +129,8 @@ function actor_binder:info_callback(npc, info_id)
 
 	-- Отметки на карте
 	level_tasks.process_info_portion(info_id)
+
+	self.am:call("on_info", npc, info_id)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:article_callback(npc, group, name)
@@ -127,17 +141,35 @@ function actor_binder:article_callback(npc, group, name)
 	else
 		news_manager.send_encyclopedy("encyclopedy", group)
 	end
+
+	self.am:call("on_article", npc, group, name, article_type)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:on_item_take (obj)
     level_tasks.proceed(self.object)
+
+    if not obj then return end
+    local sobj = alife():object(obj:id())
+    if not sobj then
+        if obj:section() ~= "bolt" then
+            self.object:drop_item(obj)
+        end
+        return
+    end
+
+    self.am:call("on_take", obj, sobj)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:on_item_drop (obj)
     level_tasks.proceed(self.object)
+
+    if not obj then return end
+    local sobj = alife():object(obj:id())
+    if not sobj then return end
+
+    self.am:call("on_drop", obj, sobj)
 end
 ----------------------------------------------------------------------------------------------------------------------
-
 function actor_binder:task_callback(_task, _objective, _state)
 	task_manager.task_callback(_task:get_id(), _objective:get_idx(), _state)
 	if _objective:get_idx() == 0 then
@@ -154,9 +186,17 @@ function actor_binder:task_callback(_task, _objective, _state)
 			news_manager.send_task(db.actor, "update", _task, _objective)
 		end
 	end
+
+	self.am:call("on_task", _task, _objective, _state)
 end
 ----------------------------------------------------------------------------------------------------------------------
+local update_was_never_called = true
 function actor_binder:update(delta)
+	if update_was_never_called then
+        	self.am:call("on_first_update")
+        	update_was_never_called = false
+	end
+
 	object_binder.update(self, delta)
 
 	local time = time_global()
@@ -248,6 +288,8 @@ function actor_binder:update(delta)
 
 		self.bCheckStart = false		
 	end
+	
+	self.am:call("on_update", delta)
 end
 ----------------------------------------------------------------------------------------------------------------------
 function actor_binder:save(packet)
@@ -268,6 +310,8 @@ function actor_binder:save(packet)
 	self.actor_detector:save(packet)
 
 	log3("~~Actor netpacket size %s", packet:w_tell())
+
+	self.am:call("on_save", packet)
 end
 ----------------------------------------------------------------------------------------------------------------------
 local game_difficulty_by_num = {"gd_novice", "gd_stalker", "gd_veteran", "gd_master"}
@@ -288,6 +332,8 @@ function actor_binder:load(reader)
 	task_manager.load()
 
 	self.actor_detector:load(reader)
+
+	self.am:call("on_load", reader)	
 end
 ----------------------------------------------------------------------------------------------------------------------
 
