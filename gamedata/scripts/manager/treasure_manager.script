@@ -191,27 +191,29 @@ function CTreasure:treasure_empty(box, box_story_id)
 	self.treasure_info[k].active = false
 	level.map_remove_object_spot(box:id(), "treasure")
 end
+
 --' Сохранение
-function CTreasure:save(p)
-	--' Сохраняем размер таблицы
-	local size = 0
+function CTreasure:save()
+	local treasures = {}
+
 	for k,v in pairs(self.treasure_info) do
-		size = size + 1
+		table.insert( treasures, { v.target, v.active, v.done } )
 	end
-	p:w_u16(size)
-	for k,v in pairs(self.treasure_info) do
-		p:w_u16(v.target)
-		p:w_bool(v.active)
-		p:w_bool(v.done)
-	end
+
+	ogsr_unist.save_var(script_name() .. ".treasures", treasures)
+	--log3("[%s] saved treasures: %s", script_name(), treasures)
 end
+
 --' Загрузка
-function CTreasure:load(p)
-	local t = p:r_u16()
-	for i = 1,t do
-		local k = self.treasure_by_target[p:r_u16()]
-		self.treasure_info[k].active = p:r_bool()
-		self.treasure_info[k].done = p:r_bool()
+function CTreasure:load()
+	local treasures = ogsr_unist.load_var_safe(script_name() .. ".treasures")
+	--log3("[%s] loaded treasures: %s", script_name(), treasures)
+	for _, item in ipairs( treasures ) do
+		local id, active, done = unpack(item)
+		local k = self.treasure_by_target[id]
+		local info = self.treasure_info[k]
+		info.active = active
+		info.done = done
 	end
 end
 
@@ -224,18 +226,18 @@ function get_treasure_manager()
 end
 
 function take_item_from_box(box, box_story_id)
-	printf("!!! take item from box %s", tostring(box:is_inv_box_empty()))
 	if box:is_inv_box_empty() == true then
 		get_treasure_manager():treasure_empty(box, box_story_id)
 	end
 end
 
-function save(p)
-	get_treasure_manager():save(p)
+function save()
+	get_treasure_manager():save()
 end
-function load(p)
-	get_treasure_manager():load(p)
+function load()
+	get_treasure_manager():load()
 end
+
 function clear_treasure_manager()
 	treasure_manager = nil
 end

@@ -1,0 +1,49 @@
+local xvars = get_stored_vars()
+
+--------------| Публичный интерфейс модуля |-----------------------------------
+
+function unpack_value(value)
+    if type(value) == "userdata" then
+        value = value(true)
+    end
+    return value
+end
+
+function var_exists(name)
+    return xvars[name] ~= nil
+end
+
+function save_var(name, value)
+    xvars[name] = value
+end
+
+function load_var(name, default_value)
+    local value = xvars[name]
+    if value == nil then
+        ASSERT(default_value ~= nil, "load_var: neither value '%s' is exist, nor default value is provided", name)
+        save_var(name, default_value)
+        return default_value
+    end
+    return unpack_value(value)
+end
+
+-- в случае, если не существует, просто вернуть nil
+function load_var_safe(name)
+    return unpack_value(xvars[name])
+end
+
+function delete_var(name)
+    xvars[name] = nil
+end
+
+function save_or_delete_var(name, value)
+    if value then
+        save_var(name, value)
+    else
+        delete_var(name)
+    end
+end
+
+function get_all_vars()
+    return xvars()
+end
