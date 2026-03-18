@@ -205,6 +205,170 @@ end
 log = function(...) --[[log1(...)]] end
 --***************************************************************************************************************
 
+-- делит строку в виде "aaa,bbb,ccc" на строки "aaa", "bbb", "ccc" и возвращает их в виде массива
+function split_comma_separated_list(s)
+	return string.explode(",", s)
+end
+
+sys_ini = system_ini()
+
+-- служебные функции для чтения параметров из секций объектов
+function get_line_exist(section, param, ini_file)
+	local ini = ini_file or sys_ini
+	return section and ini:section_exist(section) and ini:line_exist(section, param)
+end
+
+function get_string(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if get_line_exist(section, param, ini) then
+		return ini:r_string(section, param)
+	else
+		if def_val == nil and debug_ini then
+			log3("get_string section: %s, param %s' doesn't exist", section, param)
+		end
+		return def_val
+	end
+end
+
+function get_string_wq(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if get_line_exist(section, param, ini) then
+		return ini:r_string_wq(section, param)
+	else
+		if def_val == nil and debug_ini then
+			log3("get_string_wq section: %s, param %s' doesn't exist", section, param)
+		end
+		return def_val
+	end
+end
+
+function get_u32(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if get_line_exist(section, param, ini) then
+		return ini:r_u32(section, param)
+	else
+		if def_val == nil and debug_ini then
+			log3("get_u32 section: %s, param %s' doesn't exist", section, param)
+		end
+		return def_val
+	end
+end
+
+function get_bool(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if get_line_exist(section, param, ini) then
+		return ini:r_bool(section, param)
+	else
+		if def_val == nil and debug_ini then
+			log3("get_bool section: %s, param %s' doesn't exist", section, param)
+		end
+		return not (not def_val)
+	end
+end
+
+function get_float(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if get_line_exist(section, param, ini) then
+		return ini:r_float(section, param)
+	else
+		if def_val == nil and debug_ini then
+			log3("get_float section: %s, param %s' doesn't exist", section, param)
+		end
+		return def_val
+	end
+end
+
+-- получить класс из секции, полезно в том случае, если нет объекта (и недоступен метод clsid), а есть только имя секции
+function get_class(section)
+	ASSERT(sys_ini:section_exist(section), "get_class: section '"..section.."' doesn't exist")
+	ASSERT(sys_ini:line_exist(section, "class"), "get_class: there is no 'class' parameter in the section '"..section.."'")
+	return sys_ini:r_clsid(section, "class")
+end
+
+function get_rect(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	if ini:line_exist(section, param) then
+		local pos = get_names(section, param, ini)
+		log3("pos %f %f %f %f", pos[1], pos[2], pos[3], pos[4])
+		return Frect():set(tonumber(pos[1]), tonumber(pos[2]), tonumber(pos[3]), tonumber(pos[4]))
+
+	else
+		return def_val
+	end
+	return nil
+end
+
+-- читает строку вида "s1,s2,s3" и парсит на строковые значения, разделённые запятой, в таблицу вида {s1, s2, s3}
+function get_names(section, param, ini_file)
+	local ini = ini_file or sys_ini
+	ASSERT(ini:section_exist(section), "get_names: section '"..section.."' doesn't exist")
+	local s = ini:r_string(section, param)
+	return split_comma_separated_list(s)
+end
+
+-- читает строку вида "s1,s2,s3" и парсит на численные значения, разделённые запятой, в таблицу вида {n1, n2, n3}
+function get_numbers(section, param, ini_file)
+	local t = {}
+	for i,sv in ipairs(get_names(section, param, ini_file)) do
+		local v = tonumber(sv)
+		ASSERT(v, "get_numbers: can not convert to number item ["..i.."]: "..sv)
+		table.insert(t, v)
+	end
+	return t
+end
+
+function get_section_keys(section, ini_file)
+	local ini = ini_file or sys_ini
+	ASSERT(ini:section_exist(section), "get_section_keys: section '"..section.."' doesn't exist")
+	local t = {}
+	for i=0,ini:line_count(section)-1 do
+		local _, key, v = ini:r_line(section, i)
+		t[i+1] = key
+	end
+	return t
+end
+
+function get_section_keys_and_values( section, ini_file )
+  local ini = ini_file or sys_ini
+  ASSERT( ini:section_exist( section ), "get_section_keys: section '" .. section .. "' doesn't exist" )
+  local t = {}
+  for i = 0, ini:line_count( section ) - 1 do
+  local _, key, v = ini:r_line( section, i )
+    t[ key ] = v
+  end
+  return t
+end
+
+function get_vector(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	ASSERT(ini:section_exist(section), "get_vector: section '"..section.."' doesn't exist")
+	if ini:line_exist(section, param) then
+		local pos = get_names(section, param, ini)
+		return vector():set(tonumber(pos[1]), tonumber(pos[2]), tonumber(pos[3]))
+	else 
+		if def_val then
+			return def_val
+		else
+			return vector():set(0,0,0)
+		end
+	end
+end
+
+-- значение по умолчанию должно задаваться таблицей {num1, num2}
+function get_vector2(section, param, def_val, ini_file)
+	local ini = ini_file or sys_ini
+	ASSERT(ini:section_exist(section), "get_vector2: section '"..section.."' doesn't exist")
+	if ini:line_exist(section, param) then
+		local pos = get_names(section, param, ini)
+		return vector2():set(tonumber(pos[1]), tonumber(pos[2]))
+	else
+		if def_val then
+			return def_val
+		else
+			return vector2():set(0,0)
+		end
+	end
+end
 
 schemes = {} -- соответствие схем модулям
 stypes = {} -- типы схем

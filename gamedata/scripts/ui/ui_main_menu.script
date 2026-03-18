@@ -159,6 +159,11 @@ function main_menu:OnButton_options_clicked()
 	self:Show(false)
 end
 
+-- Проверка, запущена ли игра
+function check_game()
+	return level.present() and db.actor and db.actor:alive() and device().precache_frame < 1
+end
+
 function main_menu:OnKeyboard(dik, keyboard_action)
 	CUIScriptWnd.OnKeyboard(self, dik, keyboard_action)
 
@@ -166,6 +171,10 @@ function main_menu:OnKeyboard(dik, keyboard_action)
 		if dik_to_bind(dik) == key_bindings.kQUIT then
 			if level.present() and db.actor_proxy.online and db.actor:alive() then
 				self:close_and_delete_menu()
+			end
+		elseif dik == DIK_keys.DIK_F1 then
+			if check_game() and ui_cheat_main then
+				ui_cheat_main.start_menu(self)
 			end
 		elseif dik == DIK_keys.DIK_N then --personal_test
 			xpcall(function() dofile(getFS():update_path("$game_scripts$", "personal_test.lua")) end, log1)
