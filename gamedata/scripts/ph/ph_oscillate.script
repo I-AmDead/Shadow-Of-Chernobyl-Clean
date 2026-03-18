@@ -1,81 +1,81 @@
 ----------------------------------------------------------------------------------------------------
 -- Oscillate object
 ----------------------------------------------------------------------------------------------------
--- Исходный скрипт: Tunduk Vladimir (Sidorovich)
--- Идея следующая. Мы прикладываем к объекту линейно нарастающую силу в течении определенного времени
--- По истечении времени, мы передергиваем направление силы (на противоположное или еще как) и снова 
--- прикладываем к объекту (не забываем о линейном нарастании). 
+-- РСЃС…РѕРґРЅС‹Р№ СЃРєСЂРёРїС‚: Tunduk Vladimir (Sidorovich)
+-- РРґРµСЏ СЃР»РµРґСѓСЋС‰Р°СЏ. РњС‹ РїСЂРёРєР»Р°РґС‹РІР°РµРј Рє РѕР±СЉРµРєС‚Сѓ Р»РёРЅРµР№РЅРѕ РЅР°СЂР°СЃС‚Р°СЋС‰СѓСЋ СЃРёР»Сѓ РІ С‚РµС‡РµРЅРёРё РѕРїСЂРµРґРµР»РµРЅРЅРѕРіРѕ РІСЂРµРјРµРЅРё
+-- РџРѕ РёСЃС‚РµС‡РµРЅРёРё РІСЂРµРјРµРЅРё, РјС‹ РїРµСЂРµРґРµСЂРіРёРІР°РµРј РЅР°РїСЂР°РІР»РµРЅРёРµ СЃРёР»С‹ (РЅР° РїСЂРѕС‚РёРІРѕРїРѕР»РѕР¶РЅРѕРµ РёР»Рё РµС‰Рµ РєР°Рє) Рё СЃРЅРѕРІР°
+-- РїСЂРёРєР»Р°РґС‹РІР°РµРј Рє РѕР±СЉРµРєС‚Сѓ (РЅРµ Р·Р°Р±С‹РІР°РµРј Рѕ Р»РёРЅРµР№РЅРѕРј РЅР°СЂР°СЃС‚Р°РЅРёРё).
 ----------------------------------------------------------------------------------------------------
 class "action_oscillator"
 ---------------------------------------------------------------------------------------------------------------------
-function action_oscillator:__init (obj, storage)
+function action_oscillator:__init(obj, storage)
     self.object = obj
     self.st = storage
     self.time = 0
     self.coefficient = 0
-    self.dir = vector ():set (math.random (), 0, math.random ()):normalize ()
+    self.dir = vector():set(math.random(), 0, math.random()):normalize()
     self.joint = nil
     self.pause = false
 end
 ---------------------------------------------------------------------------------------------------------------------
-function action_oscillator:reset_scheme ()
+function action_oscillator:reset_scheme()
     self.time = device():time_global()
-    self.dir = vector ():set (math.random (), 0, math.random ()):normalize ()
-    self.coefficient = self.st.force / self.st.period 
-    self.joint = self.object:get_physics_shell ():get_joint_by_bone_name (self.st.joint)
-    self.time = time_global ()
+    self.dir = vector():set(math.random(), 0, math.random()):normalize()
+    self.coefficient = self.st.force / self.st.period
+    self.joint = self.object:get_physics_shell():get_joint_by_bone_name(self.st.joint)
+    self.time = time_global()
     self.pause = false
 end
 ---------------------------------------------------------------------------------------------------------------------
-function action_oscillator:update (delta)
-    -- получим глобальное время
-    local c_time = time_global ()
+function action_oscillator:update(delta)
+    -- РїРѕР»СѓС‡РёРј РіР»РѕР±Р°Р»СЊРЅРѕРµ РІСЂРµРјСЏ
+    local c_time = time_global()
     if self.pause == true then
-       if c_time - self.time < self.st.period * 0.5 then
-          return
-       end
-       self.time = c_time
-       self.pause = false
-    end        
-    -- проверим на необходимость изменения направления
-    if c_time - self.time >= self.st.period then
-       self.dir.x = -self.dir.x
-       self.dir.z = -self.dir.z
-       self.dir = vector_rotate_y (vector ():set (-self.dir.x, 0, -self.dir.z), self.st.angle)
-       self.time = c_time
-       self.pause = true
-       return
+        if c_time - self.time < self.st.period * 0.5 then
+            return
+        end
+        self.time = c_time
+        self.pause = false
     end
-    -- рассчитаем силу
+    -- РїСЂРѕРІРµСЂРёРј РЅР° РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ РёР·РјРµРЅРµРЅРёСЏ РЅР°РїСЂР°РІР»РµРЅРёСЏ
+    if c_time - self.time >= self.st.period then
+        self.dir.x = -self.dir.x
+        self.dir.z = -self.dir.z
+        self.dir = vector_rotate_y(vector():set(-self.dir.x, 0, -self.dir.z), self.st.angle)
+        self.time = c_time
+        self.pause = true
+        return
+    end
+    -- СЂР°СЃСЃС‡РёС‚Р°РµРј СЃРёР»Сѓ
     local force = (c_time - self.time) * self.coefficient
-    self.object:set_const_force (self.dir, force, 2)
+    self.object:set_const_force(self.dir, force, 2)
 end
 
 ---------------------------------------------------------------------------------------------------------------------
 function add_to_binder(npc, ini, scheme, section, storage)
-	printf ("DEBUG: add_to_binder: scheme='%s', section='%s'", scheme, section)
+    printf("DEBUG: add_to_binder: scheme='%s', section='%s'", scheme, section)
 
-	local new_action = action_oscillator (npc, storage)
-	xr_logic.subscribe_action_for_events (npc, storage, new_action)
+    local new_action = action_oscillator(npc, storage)
+    xr_logic.subscribe_action_for_events(npc, storage, new_action)
 end
 ---------------------------------------------------------------------------------------------------------------------
 function set_scheme(npc, ini, scheme, section, gulag_name)
-	local st = xr_logic.assign_storage_and_bind(npc, ini, scheme, section)
+    local st = xr_logic.assign_storage_and_bind(npc, ini, scheme, section)
 
-	st.logic = xr_logic.cfg_get_switch_conditions (ini, section, npc)
-	st.joint = utils.cfg_get_string (ini, section, "joint", npc, true, gulag_name)
-	if st.joint == nil then
-	   abort ("Invalid joint definition for object %s", npc:name ())
-	end   
-	st.period = utils.cfg_get_number (ini, section, "period", npc, true, 0)
-	st.force = utils.cfg_get_number (ini, section, "force", npc, true, 0)
+    st.logic = xr_logic.cfg_get_switch_conditions(ini, section, npc)
+    st.joint = utils.cfg_get_string(ini, section, "joint", npc, true, gulag_name)
+    if st.joint == nil then
+        abort("Invalid joint definition for object %s", npc:name())
+    end
+    st.period = utils.cfg_get_number(ini, section, "period", npc, true, 0)
+    st.force = utils.cfg_get_number(ini, section, "force", npc, true, 0)
     if st.period == nil or st.force == nil then
-       abort ("[ph_oscillate] Error : Force or period not defined")
-    end   
-    st.angle = utils.cfg_get_number (ini, section, "correct_angle", npc, false, 0)
+        abort("[ph_oscillate] Error : Force or period not defined")
+    end
+    st.angle = utils.cfg_get_number(ini, section, "correct_angle", npc, false, 0)
     if st.angle == nil then
-       st.angle = 0
-    end    
+        st.angle = 0
+    end
 end
 
 ---------------------------------------------------------------------------------------------------------------------

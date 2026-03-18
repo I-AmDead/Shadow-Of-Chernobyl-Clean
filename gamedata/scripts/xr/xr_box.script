@@ -1,11 +1,11 @@
---' Ключем является группировка персонажа. Значением является таблица, содержашая имена секций предметов.
+--' РљР»СЋС‡РµРј СЏРІР»СЏРµС‚СЃСЏ РіСЂСѓРїРїРёСЂРѕРІРєР° РїРµСЂСЃРѕРЅР°Р¶Р°. Р—РЅР°С‡РµРЅРёРµРј СЏРІР»СЏРµС‚СЃСЏ С‚Р°Р±Р»РёС†Р°, СЃРѕРґРµСЂР¶Р°С€Р°СЏ РёРјРµРЅР° СЃРµРєС†РёР№ РїСЂРµРґРјРµС‚РѕРІ.
 local item_by_community = {}
 
---' Множители и минимаксы для выпадения вещей в зависимости от уровня
+--' РњРЅРѕР¶РёС‚РµР»Рё Рё РјРёРЅРёРјР°РєСЃС‹ РґР»СЏ РІС‹РїР°РґРµРЅРёСЏ РІРµС‰РµР№ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СѓСЂРѕРІРЅСЏ
 local mul_by_level = {}
 local count_by_level = {}
 
---' Предметы, относящиеся к патронам. Их надо спаунить другим методом.
+--' РџСЂРµРґРјРµС‚С‹, РѕС‚РЅРѕСЃСЏС‰РёРµСЃСЏ Рє РїР°С‚СЂРѕРЅР°Рј. РС… РЅР°РґРѕ СЃРїР°СѓРЅРёС‚СЊ РґСЂСѓРіРёРј РјРµС‚РѕРґРѕРј.
 local ammo_sections = {}
 
 local death_ini = ini_file("misc\\ph_box_generic.ltx")
@@ -13,47 +13,46 @@ local death_ini = ini_file("misc\\ph_box_generic.ltx")
 class "ph_item_box"
 
 function ph_item_box:__init(obj)
-	self.obj = obj
-	
+    self.obj = obj
 
-	local community_list = { "def_box", "small_box_generic", "small_box_ussr", "small_box_nato", "small_box_army", "small_box_science", "big_box_generic", "big_box_dungeons", "big_box_arsenal"}	
-	
-	for k,v in pairs(community_list) do
-        --' Необходимо заполнить таблицу
-		-- printf("pl: community = %s",v )
+    local community_list = { "def_box", "small_box_generic", "small_box_ussr", "small_box_nato", "small_box_army", "small_box_science", "big_box_generic", "big_box_dungeons", "big_box_arsenal" }
+
+    for k, v in pairs(community_list) do
+        --' РќРµРѕР±С…РѕРґРёРјРѕ Р·Р°РїРѕР»РЅРёС‚СЊ С‚Р°Р±Р»РёС†Сѓ
+        -- printf("pl: community = %s",v )
         item_by_community[v] = {}
         if death_ini:section_exist(v) then
-		    local n = death_ini:line_count(v)
-		    local id, value = "", ""
-		    for i=0,n-1 do
-			    result, id, value	= death_ini:r_line(v,i,"","")
-                item_by_community[v][id] = 100*tonumber(value)
-				-- printf("PL : id=%s  value=%s",id, value)
-		    end
+            local n = death_ini:line_count(v)
+            local id, value = "", ""
+            for i = 0, n - 1 do
+                result, id, value = death_ini:r_line(v, i, "", "")
+                item_by_community[v][id] = 100 * tonumber(value)
+                -- printf("PL : id=%s  value=%s",id, value)
+            end
         end
     end
- 
-	--' Множители и минимаксы для выпадения вещей в зависимости от уровня
+
+    --' РњРЅРѕР¶РёС‚РµР»Рё Рё РјРёРЅРёРјР°РєСЃС‹ РґР»СЏ РІС‹РїР°РґРµРЅРёСЏ РІРµС‰РµР№ РІ Р·Р°РІРёСЃРёРјРѕСЃС‚Рё РѕС‚ СѓСЂРѕРІРЅСЏ
     local level_name = level.name()
-	
-	if not death_ini:section_exist(level_name) then
-		level_name = "default"
-	end
+
+    if not death_ini:section_exist(level_name) then
+        level_name = "default"
+    end
 
     local n = death_ini:line_count(level_name)
-	local id, value = "", ""
-	for i=0,n-1 do
-		result, id, value	= death_ini:r_line(level_name,i,"","")
+    local id, value = "", ""
+    for i = 0, n - 1 do
+        result, id, value = death_ini:r_line(level_name, i, "", "")
         mul_by_level[id] = tonumber(value)
-	end        
+    end
 
     local item_count_section = "item_count_" .. level.get_game_difficulty()
     local n = death_ini:line_count(item_count_section)
-	for i=0,n-1 do
-		result, id, value	= death_ini:r_line(item_count_section,i,"","")
-        --' Нужно распарсить value в два значения
+    for i = 0, n - 1 do
+        result, id, value = death_ini:r_line(item_count_section, i, "", "")
+        --' РќСѓР¶РЅРѕ СЂР°СЃРїР°СЂСЃРёС‚СЊ value РІ РґРІР° Р·РЅР°С‡РµРЅРёСЏ
         local t = parse_nums(value)
-		if t[1] == nil then
+        if t[1] == nil then
             abort("Error on [death_ini] declaration. Section [%s], line [%s]", item_count_section, tostring(id))
         end
         local min = t[1]
@@ -61,7 +60,7 @@ function ph_item_box:__init(obj)
         if max == nil then
             max = min
         end
-        
+
         if mul_by_level[id] == nil then
             mul_by_level[id] = 0
         end
@@ -69,143 +68,128 @@ function ph_item_box:__init(obj)
         min = tonumber(min) * mul_by_level[id]
         max = tonumber(max) * mul_by_level[id]
 
-        count_by_level[id] = {min = min, max = max}
-	end        
-	--' Предметы, относящиеся к патронам. Их надо спаунить другим методом.
-   ammo_sections = {}
+        count_by_level[id] = { min = min, max = max }
+    end
+    --' РџСЂРµРґРјРµС‚С‹, РѕС‚РЅРѕСЃСЏС‰РёРµСЃСЏ Рє РїР°С‚СЂРѕРЅР°Рј. РС… РЅР°РґРѕ СЃРїР°СѓРЅРёС‚СЊ РґСЂСѓРіРёРј РјРµС‚РѕРґРѕРј.
+    ammo_sections = {}
     local n = death_ini:line_count("ammo_sections")
-	local id, value = "", ""
-	for i=0,n-1 do
-		result, id, value	= death_ini:r_line("ammo_sections",i,"","")
+    local id, value = "", ""
+    for i = 0, n - 1 do
+        result, id, value = death_ini:r_line("ammo_sections", i, "", "")
         ammo_sections[id] = true
-	end        
-	        
-	
-	
+    end
 end
 
 function ph_item_box:spawn_items()
-	local spawn_items = {}
-	local ini = self.obj:spawn_ini()
-	local community	= utils.cfg_get_string(ini, "drop_box", "community", self.obj, false, "", "def_box")
-	if r_items(ini, "drop_box", "items") ~= nil then
-		local items = r_items(ini, "drop_box", "items")
-		for k,v in pairs(items) do
-			create_obligatory_items(self.obj, v.section, v.count)
-		end
-		return
-	end
-			
-		printf(" community = %s", community)
-	--' Доспавниваем необходимое количество итемов:
-    --' Необходимо составить список объектов которые могут быть заспавнены для персонажа
-    local spawn_items = item_by_community[community]
-	--' Если комьюнити задана не верно, то ставим дефолт и срем в лог.
-	if spawn_items == nil then 
-		printf("xr_box: wrong community -- %s setting default def_box ", community)
-		local spawn_items = {}
-        local spawn_items = item_by_community["def_box"]
-	end
-    
-    for k,v in pairs(spawn_items) do		
-		--' По каждому объекту необходимо получить количество
-		local number = math.ceil(math.random(count_by_level[k].min, count_by_level[k].max))
-		--' Необходимо заспавнить нужное количество.
-		 create_items(self.obj, k, number, v)			
+    local spawn_items = {}
+    local ini = self.obj:spawn_ini()
+    local community = utils.cfg_get_string(ini, "drop_box", "community", self.obj, false, "", "def_box")
+    if r_items(ini, "drop_box", "items") ~= nil then
+        local items = r_items(ini, "drop_box", "items")
+        for k, v in pairs(items) do
+            create_obligatory_items(self.obj, v.section, v.count)
+        end
+        return
     end
-end	
 
---' Функция спавнит необходимое число предметов
+    printf(" community = %s", community)
+    --' Р”РѕСЃРїР°РІРЅРёРІР°РµРј РЅРµРѕР±С…РѕРґРёРјРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РёС‚РµРјРѕРІ:
+    --' РќРµРѕР±С…РѕРґРёРјРѕ СЃРѕСЃС‚Р°РІРёС‚СЊ СЃРїРёСЃРѕРє РѕР±СЉРµРєС‚РѕРІ РєРѕС‚РѕСЂС‹Рµ РјРѕРіСѓС‚ Р±С‹С‚СЊ Р·Р°СЃРїР°РІРЅРµРЅС‹ РґР»СЏ РїРµСЂСЃРѕРЅР°Р¶Р°
+    local spawn_items = item_by_community[community]
+    --' Р•СЃР»Рё РєРѕРјСЊСЋРЅРёС‚Рё Р·Р°РґР°РЅР° РЅРµ РІРµСЂРЅРѕ, С‚Рѕ СЃС‚Р°РІРёРј РґРµС„РѕР»С‚ Рё СЃСЂРµРј РІ Р»РѕРі.
+    if spawn_items == nil then
+        printf("xr_box: wrong community -- %s setting default def_box ", community)
+        local spawn_items = {}
+        local spawn_items = item_by_community["def_box"]
+    end
+
+    for k, v in pairs(spawn_items) do
+        --' РџРѕ РєР°Р¶РґРѕРјСѓ РѕР±СЉРµРєС‚Сѓ РЅРµРѕР±С…РѕРґРёРјРѕ РїРѕР»СѓС‡РёС‚СЊ РєРѕР»РёС‡РµСЃС‚РІРѕ
+        local number = math.ceil(math.random(count_by_level[k].min, count_by_level[k].max))
+        --' РќРµРѕР±С…РѕРґРёРјРѕ Р·Р°СЃРїР°РІРЅРёС‚СЊ РЅСѓР¶РЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ.
+        create_items(self.obj, k, number, v)
+    end
+end
+
+--' Р¤СѓРЅРєС†РёСЏ СЃРїР°РІРЅРёС‚ РЅРµРѕР±С…РѕРґРёРјРѕРµ С‡РёСЃР»Рѕ РїСЂРµРґРјРµС‚РѕРІ
 function create_items(obj, section, number, rnd)
     printf("create %s of %s", tostring(number), tostring(section))
     if ammo_sections[section] == true then
-		if math.random(100) <= rnd	then
-				
-			if number > 0 then
-				local position = vector():set(0,0,0)
-				position.x = obj:position().x + math.random(-30,30)/100
-				position.z = obj:position().z + math.random(-30,30)/100
-				position.y = obj:position().y + math.random(30,50)/100
+        if math.random(100) <= rnd then
+            if number > 0 then
+                local position = vector():set(0, 0, 0)
+                position.x = obj:position().x + math.random(-30, 30) / 100
+                position.z = obj:position().z + math.random(-30, 30) / 100
+                position.y = obj:position().y + math.random(30, 50) / 100
 
-				se_respawn.create_ammo(section,	
-					    position,
-						obj:level_vertex_id(),	
-						obj:game_vertex_id(),
-						65535,
-						number)
-			end
-		end
-    else
-        for i=1,number do
-			--' Проверяем вероятность появить каждый объект в отдельности
-            if math.random(100) <=  rnd then
-				local position = vector():set(0,0,0)
-				position.x = obj:position().x + math.random(-30,30)/100
-				position.z = obj:position().z + math.random(-30,30)/100
-				position.y = obj:position().y + math.random(30,50)/100
-
-				alife():create(section,	
-					    position,
-						obj:level_vertex_id(),	
-						obj:game_vertex_id())
-			end
+                se_respawn.create_ammo(section, position, obj:level_vertex_id(), obj:game_vertex_id(), 65535, number)
+            end
         end
-    end    
+    else
+        for i = 1, number do
+            --' РџСЂРѕРІРµСЂСЏРµРј РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ РїРѕСЏРІРёС‚СЊ РєР°Р¶РґС‹Р№ РѕР±СЉРµРєС‚ РІ РѕС‚РґРµР»СЊРЅРѕСЃС‚Рё
+            if math.random(100) <= rnd then
+                local position = vector():set(0, 0, 0)
+                position.x = obj:position().x + math.random(-30, 30) / 100
+                position.z = obj:position().z + math.random(-30, 30) / 100
+                position.y = obj:position().y + math.random(30, 50) / 100
+
+                alife():create(section, position, obj:level_vertex_id(), obj:game_vertex_id())
+            end
+        end
+    end
 end
 
-function parse_names( s )
+function parse_names(s)
     local t = {}
-    for name in string.gfind( s, "([%w_%-.\\]+)%p*" ) do
-        table.insert( t, name )
+    for name in string.gfind(s, "([%w_%-.\\]+)%p*") do
+        table.insert(t, name)
     end
     return t
 end
 
-function r_items( spawn_ini, section, line)
-	if spawn_ini:line_exist( section, line ) then
-		--' если default-ов больше, чем значений в ini, то забить недостающие последним значением из ini
-		local t = parse_names( spawn_ini:r_string( section, line ) )
-		local n = table.getn( t )
-		
-		local ret_table = {}
-		local k = 1
-		while k <= n do
-			local item = {}
-			item.section = t[k]
-			-- Проверяем что это не последняя запись
-			if t[k+1] ~= nil then
-				local p = tonumber(t[k+1])
-				-- проверяем что вторым числом задана вероятность, а не другая секция спавну
-				if p then
-					-- забиваем число
-					item.count = p
-					k = k + 2
-				else
-					-- забиваем дефолт 1
-					item.count = 1
-					k = k + 1
-				end
-			else
-				item.count	 = 1
-				k = k + 1
-			end
-			table.insert(ret_table, item)	
-		end
-		return ret_table
-	end
-	return nil
+function r_items(spawn_ini, section, line)
+    if spawn_ini:line_exist(section, line) then
+        --' РµСЃР»Рё default-РѕРІ Р±РѕР»СЊС€Рµ, С‡РµРј Р·РЅР°С‡РµРЅРёР№ РІ ini, С‚Рѕ Р·Р°Р±РёС‚СЊ РЅРµРґРѕСЃС‚Р°СЋС‰РёРµ РїРѕСЃР»РµРґРЅРёРј Р·РЅР°С‡РµРЅРёРµРј РёР· ini
+        local t = parse_names(spawn_ini:r_string(section, line))
+        local n = table.getn(t)
+
+        local ret_table = {}
+        local k = 1
+        while k <= n do
+            local item = {}
+            item.section = t[k]
+            -- РџСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ СЌС‚Рѕ РЅРµ РїРѕСЃР»РµРґРЅСЏСЏ Р·Р°РїРёСЃСЊ
+            if t[k + 1] ~= nil then
+                local p = tonumber(t[k + 1])
+                -- РїСЂРѕРІРµСЂСЏРµРј С‡С‚Рѕ РІС‚РѕСЂС‹Рј С‡РёСЃР»РѕРј Р·Р°РґР°РЅР° РІРµСЂРѕСЏС‚РЅРѕСЃС‚СЊ, Р° РЅРµ РґСЂСѓРіР°СЏ СЃРµРєС†РёСЏ СЃРїР°РІРЅСѓ
+                if p then
+                    -- Р·Р°Р±РёРІР°РµРј С‡РёСЃР»Рѕ
+                    item.count = p
+                    k = k + 2
+                else
+                    -- Р·Р°Р±РёРІР°РµРј РґРµС„РѕР»С‚ 1
+                    item.count = 1
+                    k = k + 1
+                end
+            else
+                item.count = 1
+                k = k + 1
+            end
+            table.insert(ret_table, item)
+        end
+        return ret_table
+    end
+    return nil
 end
 
-function create_obligatory_items(obj, item , count)
-	for i = 1,count do
-				local position = vector():set(0,0,0)
-				position.x = obj:position().x + math.random(-30,30)/100
-				position.z = obj:position().z + math.random(-30,30)/100
-				position.y = obj:position().y + math.random(30,50)/100
+function create_obligatory_items(obj, item, count)
+    for i = 1, count do
+        local position = vector():set(0, 0, 0)
+        position.x = obj:position().x + math.random(-30, 30) / 100
+        position.z = obj:position().z + math.random(-30, 30) / 100
+        position.y = obj:position().y + math.random(30, 50) / 100
 
-				alife():create(item,	
-					    position,
-						obj:level_vertex_id(),	
-						obj:game_vertex_id())
-			end
+        alife():create(item, position, obj:level_vertex_id(), obj:game_vertex_id())
+    end
 end

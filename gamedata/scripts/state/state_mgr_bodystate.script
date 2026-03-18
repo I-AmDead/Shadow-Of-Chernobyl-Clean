@@ -1,78 +1,82 @@
-
-
---' Движковое состояние тела
---' мы уже находимся в необходимом состоянии?
-class "eva_state_mgr_bodystate" (property_evaluator)
-function eva_state_mgr_bodystate:__init(name, st) super (nil, name)
-	self.st = st
+--' Р”РІРёР¶РєРѕРІРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ С‚РµР»Р°
+--' РјС‹ СѓР¶Рµ РЅР°С…РѕРґРёРјСЃСЏ РІ РЅРµРѕР±С…РѕРґРёРјРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё?
+class "eva_state_mgr_bodystate"(property_evaluator)
+function eva_state_mgr_bodystate:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_bodystate:evaluate()
-	return (state_lib.states[self.st.target_state].bodystate == nil) or
-		   (state_lib.states[self.st.target_state].bodystate == self.object:target_body_state())
+    return (state_lib.states[self.st.target_state].bodystate == nil) or (state_lib.states[self.st.target_state].bodystate == self.object:target_body_state())
 end
 
---' нужно ли нам переключиться в крауч
-class "eva_state_mgr_bodystate_crouch" (property_evaluator)
-function eva_state_mgr_bodystate_crouch:__init(name, st) super (nil, name)
-	self.st = st
+--' РЅСѓР¶РЅРѕ Р»Рё РЅР°Рј РїРµСЂРµРєР»СЋС‡РёС‚СЊСЃСЏ РІ РєСЂР°СѓС‡
+class "eva_state_mgr_bodystate_crouch"(property_evaluator)
+function eva_state_mgr_bodystate_crouch:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_bodystate_crouch:evaluate()
-	return state_lib.states[self.st.target_state].bodystate == move.crouch
+    return state_lib.states[self.st.target_state].bodystate == move.crouch
 end
 
---' нужно ли нам переключаться в стенд
-class "eva_state_mgr_bodystate_standing" (property_evaluator)
-function eva_state_mgr_bodystate_standing:__init(name, st) super (nil, name)
-	self.st = st
+--' РЅСѓР¶РЅРѕ Р»Рё РЅР°Рј РїРµСЂРµРєР»СЋС‡Р°С‚СЊСЃСЏ РІ СЃС‚РµРЅРґ
+class "eva_state_mgr_bodystate_standing"(property_evaluator)
+function eva_state_mgr_bodystate_standing:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_bodystate_standing:evaluate()
-	return state_lib.states[self.st.target_state].bodystate == move.standing
+    return state_lib.states[self.st.target_state].bodystate == move.standing
 end
 
---' находимся ли мы сейчас в крауче
-class "eva_state_mgr_bodystate_crouch_now" (property_evaluator)
-function eva_state_mgr_bodystate_crouch_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЅР°С…РѕРґРёРјСЃСЏ Р»Рё РјС‹ СЃРµР№С‡Р°СЃ РІ РєСЂР°СѓС‡Рµ
+class "eva_state_mgr_bodystate_crouch_now"(property_evaluator)
+function eva_state_mgr_bodystate_crouch_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_bodystate_crouch_now:evaluate()
-	return  self.object:target_body_state() == move.crouch
+    return self.object:target_body_state() == move.crouch
 end
 
---' находимся ли мы сейчас в стендинге
-class "eva_state_mgr_bodystate_standing_now" (property_evaluator)
-function eva_state_mgr_bodystate_standing_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЅР°С…РѕРґРёРјСЃСЏ Р»Рё РјС‹ СЃРµР№С‡Р°СЃ РІ СЃС‚РµРЅРґРёРЅРіРµ
+class "eva_state_mgr_bodystate_standing_now"(property_evaluator)
+function eva_state_mgr_bodystate_standing_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_bodystate_standing_now:evaluate()
-	return  self.object:target_body_state() == move.standing
+    return self.object:target_body_state() == move.standing
 end
 
---' Переходим в крауч
-class "act_state_mgr_bodystate_crouch" (action_base)
-function act_state_mgr_bodystate_crouch:__init(name) super (nil, name)
+--' РџРµСЂРµС…РѕРґРёРј РІ РєСЂР°СѓС‡
+class "act_state_mgr_bodystate_crouch"(action_base)
+function act_state_mgr_bodystate_crouch:__init(name)
+    super(nil, name)
 end
 function act_state_mgr_bodystate_crouch:initialize()
-	action_base.initialize(self)
-	self.object:set_body_state(move.crouch)
+    action_base.initialize(self)
+    self.object:set_body_state(move.crouch)
 end
 function act_state_mgr_bodystate_crouch:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_bodystate_crouch:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
 
---' Переходим в стендинг
-class "act_state_mgr_bodystate_standing" (action_base)
-function act_state_mgr_bodystate_standing:__init(name) super (nil, name)
+--' РџРµСЂРµС…РѕРґРёРј РІ СЃС‚РµРЅРґРёРЅРі
+class "act_state_mgr_bodystate_standing"(action_base)
+function act_state_mgr_bodystate_standing:__init(name)
+    super(nil, name)
 end
 function act_state_mgr_bodystate_standing:initialize()
-	action_base.initialize(self)
-	self.object:set_body_state(move.standing)
+    action_base.initialize(self)
+    self.object:set_body_state(move.standing)
 end
 function act_state_mgr_bodystate_standing:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_bodystate_standing:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end

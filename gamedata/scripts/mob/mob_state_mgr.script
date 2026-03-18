@@ -1,43 +1,39 @@
 function get_state(ini, section, obj)
-	
-	
---	local obj_clsid = get_clsid(obj)
---	if obj_clsid == clsid.bloodsucker_s then
---		def_state = "vis"
---	else
---		def_state = ""
---	end
-	local state  = utils.cfg_get_string(ini, section, "state", obj, false, "", "")
-	if (state == "") then
-		return nil
-	end
-	
-	return state
+    --	local obj_clsid = get_clsid(obj)
+    --	if obj_clsid == clsid.bloodsucker_s then
+    --		def_state = "vis"
+    --	else
+    --		def_state = ""
+    --	end
+    local state = utils.cfg_get_string(ini, section, "state", obj, false, "", "")
+    if state == "" then
+        return nil
+    end
+
+    return state
 end
 
 function set_state(obj, actor, state)
-	if not state then
-		return
-	end
-	
-	local obj_clsid = get_clsid(obj)
-	--printf("mob_state_mgr <set_state>: [%s].clsid = %s, state = %s", obj:name(), tostring(obj_clsid), state)
-	if obj_clsid == clsid.bloodsucker_s then
-		if state == "invis" then
-			obj:set_invisible(true)
-			return
-		elseif state == "vis" then
-			obj:set_invisible(false)
-			return
-		end
-	else
-		-- У неопознанных монстров пустая строка ("") является допустимым (заодно и дефолтным) состоянием
-		if state == "" then
-			return
-		end
-	end
+    if not state then
+        return
+    end
 
-	abort("mob_state_mgr: object '%s': unknown state '%s' requested",
-		obj:name(), state)
+    local obj_clsid = get_clsid(obj)
+    --printf("mob_state_mgr <set_state>: [%s].clsid = %s, state = %s", obj:name(), tostring(obj_clsid), state)
+    if obj_clsid == clsid.bloodsucker_s then
+        if state == "invis" then
+            obj:set_invisible(true)
+            return
+        elseif state == "vis" then
+            obj:set_invisible(false)
+            return
+        end
+    else
+        -- РЈ РЅРµРѕРїРѕР·РЅР°РЅРЅС‹С… РјРѕРЅСЃС‚СЂРѕРІ РїСѓСЃС‚Р°СЏ СЃС‚СЂРѕРєР° ("") СЏРІР»СЏРµС‚СЃСЏ РґРѕРїСѓСЃС‚РёРјС‹Рј (Р·Р°РѕРґРЅРѕ Рё РґРµС„РѕР»С‚РЅС‹Рј) СЃРѕСЃС‚РѕСЏРЅРёРµРј
+        if state == "" then
+            return
+        end
+    end
+
+    abort("mob_state_mgr: object '%s': unknown state '%s' requested", obj:name(), state)
 end
-

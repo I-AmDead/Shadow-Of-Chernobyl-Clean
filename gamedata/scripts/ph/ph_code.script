@@ -2,16 +2,15 @@
 -- Code Pad
 ----------------------------------------------------------------------------------------------------
 -- Author: Jim
--- Доработка: 2006 @ Oleg Kreptul (Haron) okreptul@yahoo.com
+-- Р”РѕСЂР°Р±РѕС‚РєР°: 2006 @ Oleg Kreptul (Haron) okreptul@yahoo.com
 ----------------------------------------------------------------------------------------------------
 function printf() end
-
 
 class "codepad"
 
 function codepad:__init(obj, storage)
     self.object = obj
-    self.st     = storage
+    self.st = storage
 end
 
 function codepad:reset_scheme()
@@ -19,12 +18,11 @@ function codepad:reset_scheme()
     --self.object:set_callback(callback.use_object, self.use_callback, self)
 end
 
-function codepad:update(delta)
-end
+function codepad:update(delta) end
 
 function codepad:use_callback(obj, who)
     local numpad = ui_numpad.numpad(self)
-    level.start_stop_menu(numpad,true)
+    level.start_stop_menu(numpad, true)
 end
 
 function codepad:OnNumberReceive(text)
@@ -44,14 +42,14 @@ function codepad:OnNumberReceive(text)
     end
 end
 function codepad:deactivate()
-	self.object:set_tip_text("")
+    self.object:set_tip_text("")
 end
 
 ---------------------------------------------------------------------------------------------------------------------
 function add_to_binder(npc, ini, scheme, section, storage)
     local new_action = codepad(npc, storage)
 
-    -- Зарегистрировать все actions, в которых должен быть вызван метод reset_scheme при изменении настроек схемы:
+    -- Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊ РІСЃРµ actions, РІ РєРѕС‚РѕСЂС‹С… РґРѕР»Р¶РµРЅ Р±С‹С‚СЊ РІС‹Р·РІР°РЅ РјРµС‚РѕРґ reset_scheme РїСЂРё РёР·РјРµРЅРµРЅРёРё РЅР°СЃС‚СЂРѕРµРє СЃС…РµРјС‹:
     xr_logic.subscribe_action_for_events(npc, storage, new_action)
 end
 
@@ -61,10 +59,10 @@ function set_scheme(npc, ini, scheme, section, gulag_name)
     local st = xr_logic.assign_storage_and_bind(npc, ini, scheme, section)
     st.logic = xr_logic.cfg_get_switch_conditions(ini, section, npc)
 
-	st.tips  = utils.cfg_get_string(ini, section, "tips", npc, false, "", "st_codelock")
+    st.tips = utils.cfg_get_string(ini, section, "tips", npc, false, "", "st_codelock")
     npc:set_tip_text(st.tips)
-    
-    st.code = utils.cfg_get_number(ini, section, "code", npc, false)    
+
+    st.code = utils.cfg_get_number(ini, section, "code", npc, false)
     if st.code then
         st.on_code = xr_logic.cfg_get_condlist(ini, section, "on_code", npc)
         printf("ph_code <set_scheme>: on_code [%d]", st.code)

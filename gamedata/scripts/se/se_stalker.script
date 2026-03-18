@@ -1,210 +1,201 @@
 --[[
-Изменения script_version:
-	3 - сохранение поля job_online
-	5 - сохранение поля was_in_smart_terrain
-	6 - сохранение поля death_droped
+РР·РјРµРЅРµРЅРёСЏ script_version:
+	3 - СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕР»СЏ job_online
+	5 - СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕР»СЏ was_in_smart_terrain
+	6 - СЃРѕС…СЂР°РЅРµРЅРёРµ РїРѕР»СЏ death_droped
 ]]
 
-class "se_stalker"	(cse_alife_human_stalker)
+class "se_stalker"(cse_alife_human_stalker)
 --------------------
-function se_stalker:__init (section) super (section)
-	self.ini = nil
-	self.ini_initialized = false
+function se_stalker:__init(section)
+    super(section)
+    self.ini = nil
+    self.ini_initialized = false
 
-	self.spawner_present = false
+    self.spawner_present = false
 
-	self.smart_terrain_conditions = nil
-	self.smart_terrain_conditions_initialized = false
+    self.smart_terrain_conditions = nil
+    self.smart_terrain_conditions_initialized = false
 
-	-- этот флаг берётся из работы смарта
-	-- true     = всегда в онлайне
-	-- false    = всегда в офлайне
-	-- condlist = условие, которое отпределяет true или false
-	-- nil      = смарту всё равно
-	self.job_online          = nil
-	self.job_online_condlist = nil
+    -- СЌС‚РѕС‚ С„Р»Р°Рі Р±РµСЂС‘С‚СЃСЏ РёР· СЂР°Р±РѕС‚С‹ СЃРјР°СЂС‚Р°
+    -- true     = РІСЃРµРіРґР° РІ РѕРЅР»Р°Р№РЅРµ
+    -- false    = РІСЃРµРіРґР° РІ РѕС„Р»Р°Р№РЅРµ
+    -- condlist = СѓСЃР»РѕРІРёРµ, РєРѕС‚РѕСЂРѕРµ РѕС‚РїСЂРµРґРµР»СЏРµС‚ true РёР»Рё false
+    -- nil      = СЃРјР°СЂС‚Сѓ РІСЃС‘ СЂР°РІРЅРѕ
+    self.job_online = nil
+    self.job_online_condlist = nil
 
-	-- посещал ли сталкер хоть один smart_terrain
-	self.was_in_smart_terrain = false
+    -- РїРѕСЃРµС‰Р°Р» Р»Рё СЃС‚Р°Р»РєРµСЂ С…РѕС‚СЊ РѕРґРёРЅ smart_terrain
+    self.was_in_smart_terrain = false
 
-	self.death_droped = false --'Генерил ли персонаж выпадаемые предметы или нет.
+    self.death_droped = false --'Р“РµРЅРµСЂРёР» Р»Рё РїРµСЂСЃРѕРЅР°Р¶ РІС‹РїР°РґР°РµРјС‹Рµ РїСЂРµРґРјРµС‚С‹ РёР»Рё РЅРµС‚.
 
-	--' Test for dima
-	self.dont_spawn_online = false
+    --' Test for dima
+    self.dont_spawn_online = false
 end
 --------------------
 function se_stalker:get_ini()
-	if not self.ini_initialized then
-		self.ini             = self:spawn_ini ()
-		self.ini_initialized = true
+    if not self.ini_initialized then
+        self.ini = self:spawn_ini()
+        self.ini_initialized = true
 
-		if self.ini:section_exist("spawner") then
-			self.spawner = xr_logic.parse_condlist(db.actor, "spawner", "cond", self.ini:r_string("spawner", "cond"))
-		end
-	end
+        if self.ini:section_exist("spawner") then
+            self.spawner = xr_logic.parse_condlist(db.actor, "spawner", "cond", self.ini:r_string("spawner", "cond"))
+        end
+    end
 end
 --------------------
 function se_stalker:get_job_online()
-	if self.job_online_condlist == nil then
-		return self.job_online
-	else
-		return xr_logic.pick_section_from_condlist(db.actor_proxy, self, self.job_online) ~= nil
-	end
-end
---------------------
-function se_stalker:can_switch_offline ()
-	if self:get_job_online() ~= nil then
-		return not self:get_job_online()
-	else
-		return cse_alife_human_stalker.can_switch_offline (self)
-	end
-end
---------------------
-function se_stalker:can_switch_online ()
-	if self.dont_spawn_online == true then
-		return false
-	end
-
-	if self:get_job_online() ~= nil then
-		return self:get_job_online()
-	end
-
-	if self.ini == nil or self.spawner == nil then
-		return cse_alife_human_stalker.can_switch_online(self)
-	end
-    
-    if db.actor ~= nil and db.actor:alive () == false then
-		return self.online
-    end    
-    
-	if self.online == false then
-	    return (xr_logic.pick_section_from_condlist(db.actor, self, self.spawner) ~= nil) and cse_alife_human_stalker.can_switch_online(self)
+    if self.job_online_condlist == nil then
+        return self.job_online
     else
-        if xr_logic.pick_section_from_condlist(db.actor, self, self.spawner) ~= nil then 
-			return true
+        return xr_logic.pick_section_from_condlist(db.actor_proxy, self, self.job_online) ~= nil
+    end
+end
+--------------------
+function se_stalker:can_switch_offline()
+    if self:get_job_online() ~= nil then
+        return not self:get_job_online()
+    else
+        return cse_alife_human_stalker.can_switch_offline(self)
+    end
+end
+--------------------
+function se_stalker:can_switch_online()
+    if self.dont_spawn_online == true then
+        return false
+    end
+
+    if self:get_job_online() ~= nil then
+        return self:get_job_online()
+    end
+
+    if self.ini == nil or self.spawner == nil then
+        return cse_alife_human_stalker.can_switch_online(self)
+    end
+
+    if db.actor ~= nil and db.actor:alive() == false then
+        return self.online
+    end
+
+    if self.online == false then
+        return (xr_logic.pick_section_from_condlist(db.actor, self, self.spawner) ~= nil) and cse_alife_human_stalker.can_switch_online(self)
+    else
+        if xr_logic.pick_section_from_condlist(db.actor, self, self.spawner) ~= nil then
+            return true
         end
         return false
-    end    	    
+    end
 end
 --------------------
-function se_stalker:STATE_Write (packet)
-	cse_alife_human_stalker.STATE_Write (self, packet)
+function se_stalker:STATE_Write(packet)
+    cse_alife_human_stalker.STATE_Write(self, packet)
 
-	if self.job_online == true then
-		packet:w_u8(0)
-	elseif self.job_online == false then
-		packet:w_u8(1)
-	elseif self.job_online == nil then
-		packet:w_u8(2)
-	else
-		packet:w_u8(3)
-		packet:w_stringZ(self.job_online_condlist)
-	end
+    if self.job_online == true then
+        packet:w_u8(0)
+    elseif self.job_online == false then
+        packet:w_u8(1)
+    elseif self.job_online == nil then
+        packet:w_u8(2)
+    else
+        packet:w_u8(3)
+        packet:w_stringZ(self.job_online_condlist)
+    end
 
-	packet:w_bool(self.was_in_smart_terrain)
-	packet:w_bool(self.death_droped )
+    packet:w_bool(self.was_in_smart_terrain)
+    packet:w_bool(self.death_droped)
 end
 --------------------
-function se_stalker:STATE_Read (packet, size)
-	cse_alife_human_stalker.STATE_Read (self, packet, size)
+function se_stalker:STATE_Read(packet, size)
+    cse_alife_human_stalker.STATE_Read(self, packet, size)
 
-	if self.script_version >= 3 then
-		local t = packet:r_u8()
+    if self.script_version >= 3 then
+        local t = packet:r_u8()
 
-		if t == 0 then
-			self.job_online = true
-		elseif t == 1 then
-			self.job_online = false
-		elseif t == 2 then
-			self.job_online = nil
-		else
-			self.job_online_condlist = packet:r_stringZ()
+        if t == 0 then
+            self.job_online = true
+        elseif t == 1 then
+            self.job_online = false
+        elseif t == 2 then
+            self.job_online = nil
+        else
+            self.job_online_condlist = packet:r_stringZ()
 
-			self.job_online = xr_logic.parse_condlist(nil, "se_stalker:STATE_Read", "job_online", self.job_online_condlist)
-		end
-	end
+            self.job_online = xr_logic.parse_condlist(nil, "se_stalker:STATE_Read", "job_online", self.job_online_condlist)
+        end
+    end
 
-	if self.script_version >= 5 then
-		self.was_in_smart_terrain = packet:r_bool()
-	end
-	if self.script_version >= 6 then
-		self.death_droped = packet:r_bool()
-	end
+    if self.script_version >= 5 then
+        self.was_in_smart_terrain = packet:r_bool()
+    end
+    if self.script_version >= 6 then
+        self.death_droped = packet:r_bool()
+    end
 end
 --------------------
 function se_stalker:on_before_register()
-	self:fill_exclusives()
+    self:fill_exclusives()
 end
 --------------------
 function se_stalker:on_register()
-	cse_alife_human_stalker.on_register( self )
+    cse_alife_human_stalker.on_register(self)
 
-	if(actor_stats.add_to_ranking~=nil)then
-		local community = self:community()
-		if not(community == "zombied" or
-		   community == "monolith" or
-		   community == "arena_enemy")
-		then
-			actor_stats.add_to_ranking(self.id)
-		end
-	end
+    if actor_stats.add_to_ranking ~= nil then
+        local community = self:community()
+        if not (community == "zombied" or community == "monolith" or community == "arena_enemy") then
+            actor_stats.add_to_ranking(self.id)
+        end
+    end
 
-	--' Регистрация в таскменеджере
-	task_manager.get_random_task():register_target(self)
+    --' Р РµРіРёСЃС‚СЂР°С†РёСЏ РІ С‚Р°СЃРєРјРµРЅРµРґР¶РµСЂРµ
+    task_manager.get_random_task():register_target(self)
 
-	if self:alive() and self:smart_terrain_id() == 65535 then
-		self:brain():update()
-	end
+    if self:alive() and self:smart_terrain_id() == 65535 then
+        self:brain():update()
+    end
 end
 --------------------
 function se_stalker:on_unregister()
-	cse_alife_human_stalker.on_unregister(self)
+    cse_alife_human_stalker.on_unregister(self)
 
-	smart_terrain.unregister_npc(self)
+    smart_terrain.unregister_npc(self)
 
-	--' Отрегистрация в таскменеджере
-	task_manager.get_random_task():unregister_target(self)
-	
-	if(actor_stats.remove_from_ranking~=nil)then
-		local community = self:community()
-		if community == "zombied" or
-		   community == "monolith" or
-		   community == "arena_enemy"
-		then
-			return
-		end
-		actor_stats.remove_from_ranking(self.id)
-	end
+    --' РћС‚СЂРµРіРёСЃС‚СЂР°С†РёСЏ РІ С‚Р°СЃРєРјРµРЅРµРґР¶РµСЂРµ
+    task_manager.get_random_task():unregister_target(self)
+
+    if actor_stats.remove_from_ranking ~= nil then
+        local community = self:community()
+        if community == "zombied" or community == "monolith" or community == "arena_enemy" then
+            return
+        end
+        actor_stats.remove_from_ranking(self.id)
+    end
 end
 --------------------
 function se_stalker:on_spawn()
-	cse_alife_human_stalker.on_spawn(self)
-
+    cse_alife_human_stalker.on_spawn(self)
 end
 --------------------
 function se_stalker:on_death(killer)
-	cse_alife_human_stalker.on_death(self, killer)
+    cse_alife_human_stalker.on_death(self, killer)
 end
 --------------------
 function se_stalker:fill_exclusives()
-	self:get_ini()
-	self.smart_terrain_conditions             = smart_terrain.read_smart_terrain_conditions( self )
+    self:get_ini()
+    self.smart_terrain_conditions = smart_terrain.read_smart_terrain_conditions(self)
 
-	if self.smart_terrain_conditions then
-		for name, condlist in pairs(self.smart_terrain_conditions) do
-			smart_terrain.exclusives[name] = (smart_terrain.exclusives[name] or 0) + 1
-		end
-	end
+    if self.smart_terrain_conditions then
+        for name, condlist in pairs(self.smart_terrain_conditions) do
+            smart_terrain.exclusives[name] = (smart_terrain.exclusives[name] or 0) + 1
+        end
+    end
 end
 
-
-
-
-
---'Торговец
-class "se_trader" (cse_alife_trader)
-function se_trader:__init (section) super (section)
+--'РўРѕСЂРіРѕРІРµС†
+class "se_trader"(cse_alife_trader)
+function se_trader:__init(section)
+    super(section)
 end
 function se_trader:keep_saved_data_anyway()
-	return true
+    return true
 end

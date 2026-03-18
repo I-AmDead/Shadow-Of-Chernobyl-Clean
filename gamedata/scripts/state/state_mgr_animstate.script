@@ -1,366 +1,380 @@
-
-
---' Скриптовое положение у тела
---' мы уже находимся в необходимом состоянии?
-class "eva_state_mgr_animstate" (property_evaluator)
-function eva_state_mgr_animstate:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎРєСЂРёРїС‚РѕРІРѕРµ РїРѕР»РѕР¶РµРЅРёРµ Сѓ С‚РµР»Р°
+--' РјС‹ СѓР¶Рµ РЅР°С…РѕРґРёРјСЃСЏ РІ РЅРµРѕР±С…РѕРґРёРјРѕРј СЃРѕСЃС‚РѕСЏРЅРёРё?
+class "eva_state_mgr_animstate"(property_evaluator)
+function eva_state_mgr_animstate:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate:evaluate()
-	return (state_lib.states[self.st.target_state].animstate == nil) or
-		   (state_lib.states[self.st.target_state].animstate == self.st.animstate:state())
+    return (state_lib.states[self.st.target_state].animstate == nil) or (state_lib.states[self.st.target_state].animstate == self.st.animstate:state())
 end
---' заняты ли мы
-class "eva_state_mgr_animstate_locked" (property_evaluator)
-function eva_state_mgr_animstate_locked:__init(name, st) super (nil, name)
-	self.st = st
+--' Р·Р°РЅСЏС‚С‹ Р»Рё РјС‹
+class "eva_state_mgr_animstate_locked"(property_evaluator)
+function eva_state_mgr_animstate_locked:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_locked:evaluate()
-	return self.st.animstate:state() == "busy"
+    return self.st.animstate:state() == "busy"
 end
 
---' Нужно ли нам стоять
-class "eva_state_mgr_animstate_idle" (property_evaluator)
-function eva_state_mgr_animstate_idle:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј СЃС‚РѕСЏС‚СЊ
+class "eva_state_mgr_animstate_idle"(property_evaluator)
+function eva_state_mgr_animstate_idle:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_idle:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "stand"
+    return state_lib.states[self.st.target_state].animstate == "stand"
 end
---' Стоим ли мы
-class "eva_state_mgr_animstate_idle_now" (property_evaluator)
-function eva_state_mgr_animstate_idle_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎС‚РѕРёРј Р»Рё РјС‹
+class "eva_state_mgr_animstate_idle_now"(property_evaluator)
+function eva_state_mgr_animstate_idle_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_idle_now:evaluate()
-	return self.st.animstate:state() == "stand"
+    return self.st.animstate:state() == "stand"
 end
 
---' Нужно ли нам сидеть
-class "eva_state_mgr_animstate_sit" (property_evaluator)
-function eva_state_mgr_animstate_sit:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј СЃРёРґРµС‚СЊ
+class "eva_state_mgr_animstate_sit"(property_evaluator)
+function eva_state_mgr_animstate_sit:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "sit"
+    return state_lib.states[self.st.target_state].animstate == "sit"
 end
---' Сидим ли мы
-class "eva_state_mgr_animstate_sit_now" (property_evaluator)
-function eva_state_mgr_animstate_sit_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎРёРґРёРј Р»Рё РјС‹
+class "eva_state_mgr_animstate_sit_now"(property_evaluator)
+function eva_state_mgr_animstate_sit_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit_now:evaluate()
-	return self.st.animstate:state() == "sit"
+    return self.st.animstate:state() == "sit"
 end
 
---' Нужно ли нам сидеть на колене
-class "eva_state_mgr_animstate_sit_knee" (property_evaluator)
-function eva_state_mgr_animstate_sit_knee:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј СЃРёРґРµС‚СЊ РЅР° РєРѕР»РµРЅРµ
+class "eva_state_mgr_animstate_sit_knee"(property_evaluator)
+function eva_state_mgr_animstate_sit_knee:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit_knee:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "sit_knee"
+    return state_lib.states[self.st.target_state].animstate == "sit_knee"
 end
---' Сидим ли мы на колене
-class "eva_state_mgr_animstate_sit_knee_now" (property_evaluator)
-function eva_state_mgr_animstate_sit_knee_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎРёРґРёРј Р»Рё РјС‹ РЅР° РєРѕР»РµРЅРµ
+class "eva_state_mgr_animstate_sit_knee_now"(property_evaluator)
+function eva_state_mgr_animstate_sit_knee_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit_knee_now:evaluate()
-	return self.st.animstate:state() == "sit_knee"
+    return self.st.animstate:state() == "sit_knee"
 end
 
---' Нужно ли нам сидеть на попе
-class "eva_state_mgr_animstate_sit_ass" (property_evaluator)
-function eva_state_mgr_animstate_sit_ass:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј СЃРёРґРµС‚СЊ РЅР° РїРѕРїРµ
+class "eva_state_mgr_animstate_sit_ass"(property_evaluator)
+function eva_state_mgr_animstate_sit_ass:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit_ass:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "sit_ass"
+    return state_lib.states[self.st.target_state].animstate == "sit_ass"
 end
---' Сидим ли мы на попе
-class "eva_state_mgr_animstate_sit_ass_now" (property_evaluator)
-function eva_state_mgr_animstate_sit_ass_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎРёРґРёРј Р»Рё РјС‹ РЅР° РїРѕРїРµ
+class "eva_state_mgr_animstate_sit_ass_now"(property_evaluator)
+function eva_state_mgr_animstate_sit_ass_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sit_ass_now:evaluate()
-	return self.st.animstate:state() == "sit_ass"
+    return self.st.animstate:state() == "sit_ass"
 end
 
---' Нужно ли нам спать
-class "eva_state_mgr_animstate_sleep" (property_evaluator)
-function eva_state_mgr_animstate_sleep:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј СЃРїР°С‚СЊ
+class "eva_state_mgr_animstate_sleep"(property_evaluator)
+function eva_state_mgr_animstate_sleep:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sleep:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "sleep"
+    return state_lib.states[self.st.target_state].animstate == "sleep"
 end
---' Спим ли мы
-class "eva_state_mgr_animstate_sleep_now" (property_evaluator)
-function eva_state_mgr_animstate_sleep_now:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎРїРёРј Р»Рё РјС‹
+class "eva_state_mgr_animstate_sleep_now"(property_evaluator)
+function eva_state_mgr_animstate_sleep_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_sleep_now:evaluate()
-	return self.st.animstate:state() == "sleep"
+    return self.st.animstate:state() == "sleep"
 end
 
---' Нужно ли нам быть раненым
-class "eva_state_mgr_animstate_wounded" (property_evaluator)
-function eva_state_mgr_animstate_wounded:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј Р±С‹С‚СЊ СЂР°РЅРµРЅС‹Рј
+class "eva_state_mgr_animstate_wounded"(property_evaluator)
+function eva_state_mgr_animstate_wounded:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_wounded:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "wounded"
+    return state_lib.states[self.st.target_state].animstate == "wounded"
 end
---' Ранены ли мы
-class "eva_state_mgr_animstate_wounded_now" (property_evaluator)
-function eva_state_mgr_animstate_wounded_now:__init(name, st) super (nil, name)
-	self.st = st
+--' Р Р°РЅРµРЅС‹ Р»Рё РјС‹
+class "eva_state_mgr_animstate_wounded_now"(property_evaluator)
+function eva_state_mgr_animstate_wounded_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_wounded_now:evaluate()
-	return self.st.animstate:state() == "wounded"
+    return self.st.animstate:state() == "wounded"
 end
 
---' Нужно ли нам быть раненым
-class "eva_state_mgr_animstate_wounded_heavy" (property_evaluator)
-function eva_state_mgr_animstate_wounded_heavy:__init(name, st) super (nil, name)
-	self.st = st
+--' РќСѓР¶РЅРѕ Р»Рё РЅР°Рј Р±С‹С‚СЊ СЂР°РЅРµРЅС‹Рј
+class "eva_state_mgr_animstate_wounded_heavy"(property_evaluator)
+function eva_state_mgr_animstate_wounded_heavy:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_wounded_heavy:evaluate()
-	return state_lib.states[self.st.target_state].animstate == "wounded_heavy"
+    return state_lib.states[self.st.target_state].animstate == "wounded_heavy"
 end
---' Ранены ли мы
-class "eva_state_mgr_animstate_wounded_heavy_now" (property_evaluator)
-function eva_state_mgr_animstate_wounded_heavy_now:__init(name, st) super (nil, name)
-	self.st = st
+--' Р Р°РЅРµРЅС‹ Р»Рё РјС‹
+class "eva_state_mgr_animstate_wounded_heavy_now"(property_evaluator)
+function eva_state_mgr_animstate_wounded_heavy_now:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function eva_state_mgr_animstate_wounded_heavy_now:evaluate()
-	return self.st.animstate:state() == "wounded_heavy"
+    return self.st.animstate:state() == "wounded_heavy"
 end
 
---' Садимся
-class "act_state_mgr_animstate_2sit" (action_base)
-function act_state_mgr_animstate_2sit:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎР°РґРёРјСЃСЏ
+class "act_state_mgr_animstate_2sit"(action_base)
+function act_state_mgr_animstate_2sit:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2sit:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("sit")
+    action_base.initialize(self)
+    self.st.animstate:set_state("sit")
 end
 function act_state_mgr_animstate_2sit:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2sit:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Садимся на колено
-class "act_state_mgr_animstate_2sit_knee" (action_base)
-function act_state_mgr_animstate_2sit_knee:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎР°РґРёРјСЃСЏ РЅР° РєРѕР»РµРЅРѕ
+class "act_state_mgr_animstate_2sit_knee"(action_base)
+function act_state_mgr_animstate_2sit_knee:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2sit_knee:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("sit_knee")
+    action_base.initialize(self)
+    self.st.animstate:set_state("sit_knee")
 end
 function act_state_mgr_animstate_2sit_knee:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2sit_knee:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Садимся на попу
-class "act_state_mgr_animstate_2sit_ass" (action_base)
-function act_state_mgr_animstate_2sit_ass:__init(name, st) super (nil, name)
-	self.st = st
+--' РЎР°РґРёРјСЃСЏ РЅР° РїРѕРїСѓ
+class "act_state_mgr_animstate_2sit_ass"(action_base)
+function act_state_mgr_animstate_2sit_ass:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2sit_ass:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("sit_ass")
+    action_base.initialize(self)
+    self.st.animstate:set_state("sit_ass")
 end
 function act_state_mgr_animstate_2sit_ass:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2sit_ass:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Встаем в айдл
-class "act_state_mgr_animstate_2idle" (action_base)
-function act_state_mgr_animstate_2idle:__init(name, st) super (nil, name)
-	self.st = st
+--' Р’СЃС‚Р°РµРј РІ Р°Р№РґР»
+class "act_state_mgr_animstate_2idle"(action_base)
+function act_state_mgr_animstate_2idle:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2idle:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("stand")
+    action_base.initialize(self)
+    self.st.animstate:set_state("stand")
 end
 function act_state_mgr_animstate_2idle:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2idle:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Засыпаем
-class "act_state_mgr_animstate_2sleep" (action_base)
-function act_state_mgr_animstate_2sleep:__init(name, st) super (nil, name)
-	self.st = st
+--' Р—Р°СЃС‹РїР°РµРј
+class "act_state_mgr_animstate_2sleep"(action_base)
+function act_state_mgr_animstate_2sleep:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2sleep:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("sleep")
+    action_base.initialize(self)
+    self.st.animstate:set_state("sleep")
 end
 function act_state_mgr_animstate_2sleep:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2sleep:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Ранены
-class "act_state_mgr_animstate_2wounded" (action_base)
-function act_state_mgr_animstate_2wounded:__init(name, st) super (nil, name)
-	self.st = st
+--' Р Р°РЅРµРЅС‹
+class "act_state_mgr_animstate_2wounded"(action_base)
+function act_state_mgr_animstate_2wounded:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2wounded:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("wounded")
+    action_base.initialize(self)
+    self.st.animstate:set_state("wounded")
 end
 function act_state_mgr_animstate_2wounded:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2wounded:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
---' Ранены сильно
-class "act_state_mgr_animstate_2wounded_heavy" (action_base)
-function act_state_mgr_animstate_2wounded_heavy:__init(name, st) super (nil, name)
-	self.st = st
+--' Р Р°РЅРµРЅС‹ СЃРёР»СЊРЅРѕ
+class "act_state_mgr_animstate_2wounded_heavy"(action_base)
+function act_state_mgr_animstate_2wounded_heavy:__init(name, st)
+    super(nil, name)
+    self.st = st
 end
 function act_state_mgr_animstate_2wounded_heavy:initialize()
-	action_base.initialize(self)
-	self.st.animstate:set_state("wounded_heavy")
+    action_base.initialize(self)
+    self.st.animstate:set_state("wounded_heavy")
 end
 function act_state_mgr_animstate_2wounded_heavy:execute()
-	action_base.execute(self)
+    action_base.execute(self)
 end
 function act_state_mgr_animstate_2wounded_heavy:finalize()
-	action_base.finalize(self)
+    action_base.finalize(self)
 end
 
-
-
---' Класс, реализующий состояния тела
+--' РљР»Р°СЃСЃ, СЂРµР°Р»РёР·СѓСЋС‰РёР№ СЃРѕСЃС‚РѕСЏРЅРёСЏ С‚РµР»Р°
 
 class "body_state"
 function body_state:__init(npc)
-	self.npc = npc
-	self.target_state = "stand"
-	self.current_state = "stand"
+    self.npc = npc
+    self.target_state = "stand"
+    self.current_state = "stand"
 
-	self.transfer_anim = {
-		stand		= { sit			= {nrm = {"idle_0_to_sit_0"}},
-						sit_knee	= {nrm = {"idle_0_to_sit_1"}},
-						sit_ass		= {nrm = {"idle_0_to_sit_2"}},
-						sleep		= {nrm = {"idle_0_to_sit_0","sit_to_sleep_0"}}},
+    self.transfer_anim = {
+        stand = {
+            sit = { nrm = { "idle_0_to_sit_0" } },
+            sit_knee = { nrm = { "idle_0_to_sit_1" } },
+            sit_ass = { nrm = { "idle_0_to_sit_2" } },
+            sleep = { nrm = { "idle_0_to_sit_0", "sit_to_sleep_0" } },
+        },
 
-		sit			= { sit_knee	= {nrm = {"sit_idle_0_to_sit_idle_1"}},
-						sit_ass		= {nrm = {"sit_idle_0_to_sit_idle_2"}},
-						stand		= {nrm = {"sit_0_to_idle_0"},
-									   lazy ={"sit_0_lazy_idle_0"}},
-						sleep		= {nrm = {"sit_0_to_sleep_0"}}},
+        sit = {
+            sit_knee = { nrm = { "sit_idle_0_to_sit_idle_1" } },
+            sit_ass = { nrm = { "sit_idle_0_to_sit_idle_2" } },
+            stand = { nrm = { "sit_0_to_idle_0" }, lazy = { "sit_0_lazy_idle_0" } },
+            sleep = { nrm = { "sit_0_to_sleep_0" } },
+        },
 
-		sit_knee	= { sit			= {nrm = {"sit_idle_1_to_sit_idle_0"}},
-						sit_ass		= {nrm = {"sit_idle_1_to_sit_idle_2"}},
-						stand		= {nrm = {"sit_1_to_idle_0"},
-									   lazy ={"sit_1_lazy_idle_0"}},
-						sleep		= {nrm = {"sit_idle_1_to_sleep_0"}}},
+        sit_knee = {
+            sit = { nrm = { "sit_idle_1_to_sit_idle_0" } },
+            sit_ass = { nrm = { "sit_idle_1_to_sit_idle_2" } },
+            stand = { nrm = { "sit_1_to_idle_0" }, lazy = { "sit_1_lazy_idle_0" } },
+            sleep = { nrm = { "sit_idle_1_to_sleep_0" } },
+        },
 
-		sit_ass		= { sit			= {nrm = {"sit_idle_2_to_sit_idle_0"}},
-						sit_knee	= {nrm = {"sit_idle_2_to_sit_idle_1"}},
-						stand		= {nrm = {"sit_2_to_idle_0"},
-									   lazy= {"sit_2_lazy_idle_0"}},
-						sleep		= {nrm = {"sit_2_to_sleep_0"}}},
-						
-		sleep		= {	stand		= {nrm = {"sleep_to_sit_0","sit_0_to_idle_0"},
-									   lazy ={"sleep_to_sit_0","sit_0_lazy_idle_0"}},
-						sit			= {nrm = {"sleep_0_to_sit_0"}},
-						sit_knee	= {nrm = {"sleep_0_to_sit_idle_1"}},
-						sit_ass		= {nrm = {"sleep_0_to_sit_2"}}}
+        sit_ass = {
+            sit = { nrm = { "sit_idle_2_to_sit_idle_0" } },
+            sit_knee = { nrm = { "sit_idle_2_to_sit_idle_1" } },
+            stand = { nrm = { "sit_2_to_idle_0" }, lazy = { "sit_2_lazy_idle_0" } },
+            sleep = { nrm = { "sit_2_to_sleep_0" } },
+        },
 
-	}
+        sleep = {
+            stand = { nrm = { "sleep_to_sit_0", "sit_0_to_idle_0" }, lazy = { "sleep_to_sit_0", "sit_0_lazy_idle_0" } },
+            sit = { nrm = { "sleep_0_to_sit_0" } },
+            sit_knee = { nrm = { "sleep_0_to_sit_idle_1" } },
+            sit_ass = { nrm = { "sleep_0_to_sit_2" } },
+        },
+    }
 
-	self.idle_anim = {
-		sit			= "sit_0_idle_0",
-		sit_knee	= "sit_1_idle_0",
-		sit_ass		= "sit_2_idle_0",
-		sleep		= "sleep_idle_0"
-	}
-
+    self.idle_anim = {
+        sit = "sit_0_idle_0",
+        sit_knee = "sit_1_idle_0",
+        sit_ass = "sit_2_idle_0",
+        sleep = "sleep_idle_0",
+    }
 end
---' Проверяет закончили ли мы изменение положения тела
+--' РџСЂРѕРІРµСЂСЏРµС‚ Р·Р°РєРѕРЅС‡РёР»Рё Р»Рё РјС‹ РёР·РјРµРЅРµРЅРёРµ РїРѕР»РѕР¶РµРЅРёСЏ С‚РµР»Р°
 function body_state:update()
-	if self.target_state ~= self.current_state then
-		if self.idle_anim[self.target_state] ~= nil then
-			if self.npc:animation_count() <= 1 then
-				self.current_state = self.target_state
-			end
-		else
-			if self.npc:animation_count() == 0 then
-				self.current_state = self.target_state
-			end
-		end
-	end
+    if self.target_state ~= self.current_state then
+        if self.idle_anim[self.target_state] ~= nil then
+            if self.npc:animation_count() <= 1 then
+                self.current_state = self.target_state
+            end
+        else
+            if self.npc:animation_count() == 0 then
+                self.current_state = self.target_state
+            end
+        end
+    end
 end
---' Возвращает текущее состояние тела
+--' Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РµРєСѓС‰РµРµ СЃРѕСЃС‚РѕСЏРЅРёРµ С‚РµР»Р°
 function body_state:state()
-	--printf("%s",self.current_state)
-	return self.current_state
+    --printf("%s",self.current_state)
+    return self.current_state
 end
---' Установка нового положения тела
+--' РЈСЃС‚Р°РЅРѕРІРєР° РЅРѕРІРѕРіРѕ РїРѕР»РѕР¶РµРЅРёСЏ С‚РµР»Р°
 function body_state:set_state(id)
-	printf("set new target state %s", id)
-	
-	self.npc:clear_animations()
-	if self.transfer_anim[self.current_state] ~= nil and
-	   self.transfer_anim[self.current_state][id] ~= nil
-	then
-		-- здесь проверяем, необходимо ли нам ленивое или быстрое вставание
-		local astate = self.transfer_anim[self.current_state][id]
-		local lazy = astate.lazy ~= nil
-		
-		if lazy == true and 
-		   (self.npc:best_enemy() ~= nil or
-		   self.npc:best_danger() ~= nil)
-		then
-			lazy = false
-		end
-		
-		if lazy == true	then
-			for k,v in pairs(astate.lazy) do
-				self.npc:add_animation(v, true, false)
-			end		
-		else
-			for k,v in pairs(astate.nrm) do
-				self.npc:add_animation(v, true, false)
-			end
-		end				
-	end
-	if self.idle_anim[id] ~= nil then
-		self.npc:add_animation(self.idle_anim[id], true, false)
-	end
-	self.current_state = "busy"
-	self.target_state = id
+    printf("set new target state %s", id)
+
+    self.npc:clear_animations()
+    if self.transfer_anim[self.current_state] ~= nil and self.transfer_anim[self.current_state][id] ~= nil then
+        -- Р·РґРµСЃСЊ РїСЂРѕРІРµСЂСЏРµРј, РЅРµРѕР±С…РѕРґРёРјРѕ Р»Рё РЅР°Рј Р»РµРЅРёРІРѕРµ РёР»Рё Р±С‹СЃС‚СЂРѕРµ РІСЃС‚Р°РІР°РЅРёРµ
+        local astate = self.transfer_anim[self.current_state][id]
+        local lazy = astate.lazy ~= nil
+
+        if lazy == true and (self.npc:best_enemy() ~= nil or self.npc:best_danger() ~= nil) then
+            lazy = false
+        end
+
+        if lazy == true then
+            for k, v in pairs(astate.lazy) do
+                self.npc:add_animation(v, true, false)
+            end
+        else
+            for k, v in pairs(astate.nrm) do
+                self.npc:add_animation(v, true, false)
+            end
+        end
+    end
+    if self.idle_anim[id] ~= nil then
+        self.npc:add_animation(self.idle_anim[id], true, false)
+    end
+    self.current_state = "busy"
+    self.target_state = id
 end
---' Восстанавливаем зацикленную айдловую анимацию
+--' Р’РѕСЃСЃС‚Р°РЅР°РІР»РёРІР°РµРј Р·Р°С†РёРєР»РµРЅРЅСѓСЋ Р°Р№РґР»РѕРІСѓСЋ Р°РЅРёРјР°С†РёСЋ
 function body_state:add_idle_animation()
-	if self.idle_anim[self.current_state] ~= nil then
-		self.npc:add_animation(self.idle_anim[self.current_state], true, false)
-	end
+    if self.idle_anim[self.current_state] ~= nil then
+        self.npc:add_animation(self.idle_anim[self.current_state], true, false)
+    end
 end
---' Есть ли для текущего состояния идловая анимация
+--' Р•СЃС‚СЊ Р»Рё РґР»СЏ С‚РµРєСѓС‰РµРіРѕ СЃРѕСЃС‚РѕСЏРЅРёСЏ РёРґР»РѕРІР°СЏ Р°РЅРёРјР°С†РёСЏ
 function body_state:idle_animation_present()
-	if self.idle_anim[self.current_state] ~= nil then
-		return true
-	end
-	return false
+    if self.idle_anim[self.current_state] ~= nil then
+        return true
+    end
+    return false
 end
-
-
-
