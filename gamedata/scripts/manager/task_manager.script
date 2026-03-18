@@ -1,3 +1,27 @@
+function attach(sm)
+	sm:subscribe({ signal = "on_task", fun = this.on_task })
+	sm:subscribe({ signal = "on_save", fun = this.save })
+	sm:subscribe({ signal = "on_load", fun = this.load })
+end
+
+function on_task(_task, _objective, _state)
+	task_callback(_task:get_id(), _objective:get_idx(), _state)
+	if _objective:get_idx() == 0 then
+		if _state == task.fail then
+			news_manager.send_task(db.actor, "fail", _task, _objective)
+		elseif _state == task.completed then
+			reward_by_task(_task)
+			news_manager.send_task(db.actor, "complete", _task, _objective)
+		else
+			news_manager.send_task(db.actor, "new", _task, _objective)
+		end
+	else
+		if _task:get_objective(0):get_state() == task.in_progress then
+			news_manager.send_task(db.actor, "update", _task, _objective)
+		end
+	end
+end
+
 local random_task = nil
 
 local parent_by_story = {
@@ -43,6 +67,8 @@ local return_task_by_type = {
 
 class "CRandomTask"
 function CRandomTask:__init()
+	self.sm = ogsr_signals.get_mgr()
+	self.sm:subscribe({ signal = "on_first_update", self = self, fun = self.on_first_update })
 	--' Ќа конструкторе вычитываем LTX и создаем заготовки квестов.
 	self.task_ini = ini_file("misc\\task_manager.ltx")
 	self.task_phrase_id = 100
@@ -166,6 +192,10 @@ function CRandomTask:__init()
 		--' ѕо самовыдаваемости
 		if v.init_condition ~= nil then
 			table.insert(self.task_id_self_inited, k)
+			if not self.subscribed then
+				self.subscribed = {signal = "on_update", self = self, fun = self.actor_update, queued = true}
+				self.sm:subscribe(self.subscribed)
+			end
 		end
 	end
 end
@@ -173,6 +203,7 @@ end
 function CRandomTask:save()
 	local tasks = {}
 	for k,v in pairs(self.task_info) do
+		local last_task_time = v.last_task_time or game.CTime()
 		table.insert(
 			tasks,
 			{
@@ -181,7 +212,7 @@ function CRandomTask:save()
 				v.enabled_props,
 				v.status,
 				v.selected_target or 4294967295,
-				v.last_task_time or game.CTime()
+				{ last_task_time:get() }
 			}
 		)
 	end
@@ -204,16 +235,16 @@ function CRandomTask:load()
 	--log3("[%s] Loaded tasks: %s", script_name(), tasks)
 
 	for _, t in ipairs( tasks ) do
-		local id = table.remove( t, 1 )
+		local id, enabled, enabled_props, status, selected_target, last_task_time = unpack(t)
 		local info = self.task_info[id]
-		info.enabled = table.remove( t, 1 )
-		info.enabled_props = table.remove( t, 1 )
-		info.status = table.remove( t, 1 )
-		local selected_target = table.remove( t, 1 )
+		info.enabled = enabled
+		info.enabled_props = enabled_props
+		info.status = status
+		local selected_target = selected_target
 		if selected_target ~= 4294967295 then
 			info.selected_target = selected_target
 		end
-		info.last_task_time = table.remove( t, 1 )
+		info.last_task_time = unpack_time(last_task_time)
 		-- здесь адский баг. јктивный selected_target может быть _только_ у выданных квестов, в остальном случае там -1.
 		-- “ут провер€ем активность таска. ѕараллельно правим еще в функции проверки завершенности таска на вс€кий случай.
 		if info.type == "defend_lager" and info.selected_target then     
@@ -488,19 +519,8 @@ function CRandomTask:task_callback(p1, p2, state)
 		return
 	end
 
-	if state == task.completed then
+	if state == task.completed or state == task.fail then
 		self.task_info[self.active_task_by_type[p1]].status = "normal"
-		--' восстановление других заданий данного типа
-		for k,v in pairs(self.task_info) do
-			if v.complex_type == self.task_info[self.active_task_by_type[p1]].complex_type then
-				v.enabled = true
-			end
-		end
-		self.active_task_by_type[p1] = nil	
-
-	elseif state == task.fail then
-		self.task_info[self.active_task_by_type[p1]].status = "normal"
-
 		--' восстановление других заданий данного типа
 		for k,v in pairs(self.task_info) do
 			if v.complex_type == self.task_info[self.active_task_by_type[p1]].complex_type then
@@ -670,6 +690,7 @@ function CRandomTask:check_task_props(task_id)
 end
 --' ѕровер€ем можем ли мы сейчас выдать какой либо самоинициализующийс€ таск
 function CRandomTask:actor_update()
+	self.sm:reschedule(math.random(1000, 1500))
 	for k,v in pairs(self.task_id_self_inited) do
 		if self.task_info[v].status == "normal" then
 			self:check_task_props(v)
@@ -829,6 +850,28 @@ function CRandomTask:init_reward_dialog(dlg, parent)
 	end
 
 end
+
+function CRandomTask:on_first_update()
+	for _, type in ipairs({"eliminate_lager", "defend_lager"}) do
+		for k,v in pairs(self.task_id_by_type[type]) do
+			local name = self.task_info[v].target
+			local sobj = name and alife():object(name)
+			if sobj and sobj:clsid() == clsid.smart_terrain then
+				if type == "defend_lager" then
+					local sm_ini = sobj:spawn_ini()
+					self.task_info[v].defend_target = utils.cfg_get_number(sm_ini, "random_task", "defend_target", nil, true)
+					if not self.task_info[v].defend_target then
+						goto CONTINUE
+					end
+				end
+				if not self.task_info[v].target_objects then self.task_info[v].target_objects = {} end
+				table.insert(self.task_info[v].target_objects, sobj.id)
+				::CONTINUE::
+			end
+		end
+	end
+end
+
 --' –егистраци€ целей дл€ квестов.
 function CRandomTask:register_target(obj)
 	if IsStalker(obj) then
@@ -907,15 +950,7 @@ function CRandomTask:unregister_target(obj)
 		end
 	end
 end
-function CRandomTask:stats(obj)
-	printf("### TASK STATISTIC ###")
-	for k,v in pairs(self.task_info) do
-		if v.init_condition ~= nil then
-			printf("[%s] %s : %s", v.status, k, tostring(v.enabled_props))
-			print_table(v.init_condition)
-		end
-	end
-end
+
 function get_random_task()
 	if random_task == nil then
 		random_task = CRandomTask()
@@ -1060,11 +1095,6 @@ end
 function task_callback(p1, p2, state)
 	return get_random_task():task_callback(p1, p2, state)
 end
-
-function actor_update()
-	get_random_task():actor_update()
-end
-
 function save()
 	get_random_task():save()
 end
@@ -1073,5 +1103,5 @@ function load()
 end
 
 function clear_task_manager()
-	random_task	 = nil
+	random_task = nil
 end

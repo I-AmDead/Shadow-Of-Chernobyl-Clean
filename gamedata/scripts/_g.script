@@ -849,6 +849,13 @@ function random_number (min_value, max_value)
     end
 end
 
+function unpack_time(v)
+    if not v then return end
+    local t = game.CTime()
+    t:set(unpack(v))
+    return t
+end
+
 -- Время суток в мс
 -- Чугай
 local ms_per_day = 24 * 60 * 60 * 1000
